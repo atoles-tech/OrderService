@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/order_service
+    username: postgres
+    password: admin
+    driver-class-name: org.postgresql.Driver
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      user-service:
+        sliding-window-size: 10
+        failure-rate-threshold: 60
+        wait-duration-in-open-state: 5s
+  timelimiter:
+    instances:
+      user-service:
+        timeout-duration: 2s
+
+auth:
+  service:
+    url: http://localhost:8082
+
+user:
+  service:
+    url: http://localhost:8081
+
+jwt:
+  secret: c3VwZXJTZWN1cmVTZWNyZXRLZXlGb3JKV1RDb25maWd1cmF0aW9uMTIz
