@@ -115,17 +115,25 @@ class OrderControllerIntegrationTest {
 
     private void setupMockAuth(String role, String username) {
         when(authServiceClient.validateToken(any(ValidateTokenRequestDto.class))).thenReturn(true);
-        when(authServiceClient.extractUsername(any(ValidateTokenRequestDto.class))).thenReturn(username);
+        when(authServiceClient.exrtactEmail(any(ValidateTokenRequestDto.class))).thenReturn(username);
         when(authServiceClient.extractRole(any(ValidateTokenRequestDto.class))).thenReturn(role);
     }
 
-    private void setupMockUserService(Long userId) {
-        when(userServiceClient.getUser(userId)).thenReturn(
+    private void setupMockUserService(String email) {
+        when(userServiceClient.getUserByEmail(email)).thenReturn(
                 UserInfoDto.builder()
-                        .id(userId)
+                        .id(123L)
                         .name("Test")
                         .surname("User")
-                        .email("test@gmail.com")
+                        .email(email)
+                        .build());
+
+        when(userServiceClient.getUser(123L)).thenReturn(
+                UserInfoDto.builder()
+                        .id(123L)
+                        .name("Test")
+                        .surname("User")
+                        .email(email)
                         .build());
     }
 
@@ -143,8 +151,8 @@ class OrderControllerIntegrationTest {
 
     private Long createTestOrder() throws Exception {
         OrderDto orderDto = createTestOrderDto();
-        setupMockAuth("ROLE_USER", "123");
-        setupMockUserService(123L);
+        setupMockAuth("ROLE_USER", "email@gmail.com");
+        setupMockUserService("email@gmail.com");
 
         MvcResult createResult = mockMvc.perform(post("/api/v1/orders")
                 .header("Authorization", getAuthHeader())
@@ -164,8 +172,8 @@ class OrderControllerIntegrationTest {
     @DisplayName("Should create and return order")
     void createOrder_ShouldCreateAndReturnOrder() throws Exception {
         OrderDto orderDto = createTestOrderDto();
-        setupMockAuth("ROLE_USER", "123");
-        setupMockUserService(123L);
+        setupMockAuth("ROLE_USER", "email@gmail.com");
+        setupMockUserService("email@gmail.com");
 
         MvcResult result = mockMvc.perform(post("/api/v1/orders")
                 .header("Authorization", getAuthHeader())
@@ -190,8 +198,8 @@ class OrderControllerIntegrationTest {
     @DisplayName("Should return order if it exists")
     void getOrderById_ShouldReturnOrder_WhenOrderExists() throws Exception {
         Long orderId = createTestOrder();
-        setupMockAuth("ROLE_USER", "123");
-        setupMockUserService(123L);
+        setupMockAuth("ROLE_USER", "email@gmail.com");
+        setupMockUserService("email@gmail.com");
 
         MvcResult getResult = mockMvc.perform(get("/api/v1/orders/{id}", orderId)
                 .header("Authorization", getAuthHeader()))
@@ -218,7 +226,7 @@ class OrderControllerIntegrationTest {
     @Test
     @DisplayName("Should return error if order not exists")
     void shouldReturnError_WhenOrderNotFound() throws Exception {
-        setupMockAuth("ROLE_USER", "123");
+        setupMockAuth("ROLE_USER", "email@gmail.com");
 
         mockMvc.perform(get("/api/v1/orders/{id}", 999L)
                 .header("Authorization", getAuthHeader()))
@@ -229,8 +237,8 @@ class OrderControllerIntegrationTest {
     @DisplayName("Should update order items if it exists")
     void shouldUpdateAndReturnOrder() throws Exception {
         Long orderId = createTestOrder();
-        setupMockAuth("ROLE_USER", "123");
-        setupMockUserService(123L);
+        setupMockAuth("ROLE_USER", "email@gmail.com");
+        setupMockUserService("email@gmail.com");
 
         OrderDto updateDto = new OrderDto();
         updateDto.setOrderItems(Arrays.asList(
@@ -267,8 +275,8 @@ class OrderControllerIntegrationTest {
     @DisplayName("Should update order status if it exists")
     void shouldUpdateAndReturnOrder_WhenItExists() throws Exception {
         Long orderId = createTestOrder();
-        setupMockAuth("ROLE_USER", "123");
-        setupMockUserService(123L);
+        setupMockAuth("ROLE_USER", "email@gmail.com");
+        setupMockUserService("email@gmail.com");
 
         MvcResult updateResult = mockMvc.perform(put("/api/v1/orders/{id}/status?status=DELIVERED", orderId)
                 .header("Authorization", getAuthHeader())
@@ -289,11 +297,11 @@ class OrderControllerIntegrationTest {
         Long orderId = createTestOrder();
         setupMockAuth("ROLE_ADMIN", "admin");
 
-        mockMvc.perform(delete("/api/v1/{id}", orderId)
+        mockMvc.perform(delete("/api/v1/orders/{id}", orderId)
                 .header("Authorization", getAuthHeader()))
                 .andExpect(status().isOk());
 
-        setupMockAuth("ROLE_USER", "123");
+        setupMockAuth("ROLE_USER", "email@gmail.com");
 
         mockMvc.perform(get("/api/v1/orders/{id}", orderId)
                 .header("Authorization", getAuthHeader()))
@@ -303,7 +311,7 @@ class OrderControllerIntegrationTest {
     @Test
     @DisplayName("Should return forbidden when user without ADMIN role tries to get all orders")
     void getAllOrders_ShouldReturnForbidden_WhenUserNotAdmin() throws Exception {
-        setupMockAuth("ROLE_USER", "123");
+        setupMockAuth("ROLE_USER", "email@gmail.com");
 
         mockMvc.perform(get("/api/v1/orders")
                 .header("Authorization", getAuthHeader()))
@@ -313,7 +321,7 @@ class OrderControllerIntegrationTest {
     @Test
     @DisplayName("Should return forbidden when user tries to access other user orders")
     void getUserOrders_ShouldReturnForbidden() throws Exception {
-        setupMockAuth("ROLE_USER", "123");
+        setupMockAuth("ROLE_USER", "email@gmail.com");
 
         mockMvc.perform(get("/api/v1/users/{userId}/orders", 456L)
                 .header("Authorization", getAuthHeader()))
@@ -323,9 +331,9 @@ class OrderControllerIntegrationTest {
     @Test
     @DisplayName("Should return forbidden when user without ADMIN role tries to delete order")
     void deleteOrder_ShouldReturnForbidden_WhenUserNotAdmin() throws Exception {
-        setupMockAuth("ROLE_USER", "123");
+        setupMockAuth("ROLE_USER", "email@gmail.com");
 
-        mockMvc.perform(delete("/api/v1/{id}", 1L)
+        mockMvc.perform(delete("/api/v1/orders/{id}", 1L)
                 .header("Authorization", getAuthHeader()))
                 .andExpect(status().isForbidden());
     }
@@ -336,7 +344,9 @@ class OrderControllerIntegrationTest {
         OrderDto orderDto = new OrderDto();
         orderDto.setOrderItems(Arrays.asList(
                 OrderItemDto.builder().itemId(999L).quantity(2).build()));
-        setupMockAuth("ROLE_USER", "123");
+        setupMockAuth("ROLE_USER", "email@gmail.com");
+
+        when(userServiceClient.getUserByEmail("email@gmail.com")).thenReturn(new UserInfoDto(1L, null, null, null, null));
 
         mockMvc.perform(post("/api/v1/orders")
                 .header("Authorization", getAuthHeader())

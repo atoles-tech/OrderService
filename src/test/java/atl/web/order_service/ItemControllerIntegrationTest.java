@@ -77,7 +77,7 @@ class ItemControllerIntegrationTest {
 
     private void setupMockAuth(String role) {
         when(authServiceClient.validateToken(any(ValidateTokenRequestDto.class))).thenReturn(true);
-        when(authServiceClient.extractUsername(any(ValidateTokenRequestDto.class))).thenReturn("testuser");
+        when(authServiceClient.exrtactEmail(any(ValidateTokenRequestDto.class))).thenReturn("testuser");
         when(authServiceClient.extractRole(any(ValidateTokenRequestDto.class))).thenReturn(role);
     }
 

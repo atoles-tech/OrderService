@@ -20,6 +20,7 @@ import atl.web.order_service.client.UserServiceClient;
 import atl.web.order_service.dto.*;
 import atl.web.order_service.exceptions.OrderNotFoundException;
 import atl.web.order_service.exceptions.RepeatbleItemException;
+import atl.web.order_service.exceptions.UserNotFoundException;
 import atl.web.order_service.mappers.OrderMapper;
 import atl.web.order_service.model.Item;
 import atl.web.order_service.model.Order;
@@ -54,9 +55,9 @@ public class OrderServiceTest {
         
         userInfoDto = UserInfoDto.builder()
                 .id(1L)
-                .name("John")
-                .surname("Doe")
-                .email("john.doe@example.com")
+                .name("name")
+                .surname("surname")
+                .email("username@gmail.com")
                 .build();
 
         orderResponseWithUserDto = OrderResponseWithUserDto.builder()
@@ -101,8 +102,9 @@ public class OrderServiceTest {
         when(itemService.getItemByIds(Arrays.asList(1L))).thenReturn(items);
         when(orderRepository.save(any(Order.class))).thenReturn(order);
         when(orderMapper.toOrderResponseWithUserDto(order)).thenReturn(orderResponseWithUserDto);
+        when(userServiceClient.getUserByEmail("username@gmail.com")).thenReturn(userInfoDto);
 
-        OrderResponseWithUserDto response = orderService.createOrder(1L, orderDto);
+        OrderResponseWithUserDto response = orderService.createOrder("username@gmail.com", orderDto);
 
         assertEquals(orderResponseWithUserDto, response);
         verify(orderRepository).save(any(Order.class));
@@ -115,16 +117,18 @@ public class OrderServiceTest {
                 OrderItemDto.builder().itemId(1L).quantity(2).build(),
                 OrderItemDto.builder().itemId(1L).quantity(1).build()
         ));
+        when(userServiceClient.getUserByEmail("username@gmail.com")).thenReturn(userInfoDto);
 
-        assertThrows(RepeatbleItemException.class, () -> orderService.createOrder(1L, orderDto));
+        assertThrows(RepeatbleItemException.class, () -> orderService.createOrder("username@gmail.com", orderDto));
     }
 
     @Test
     @DisplayName("Should return true when user is order owner")
     public void shouldReturnTrue_WhenUserIsOrderOwner(){
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+        when(userServiceClient.getUserByEmail("username@gmail.com")).thenReturn(userInfoDto);
 
-        Boolean result = orderService.isOrderOwner(1L, 1L);
+        Boolean result = orderService.isOrderOwner(1L, "username@gmail.com");
 
         assertTrue(result);
     }
@@ -134,9 +138,7 @@ public class OrderServiceTest {
     public void shouldReturnFalse_WhenUserIsNotOrderOwner(){
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
 
-        Boolean result = orderService.isOrderOwner(1L, 2L);
-
-        assertFalse(result);
+        assertThrows(UserNotFoundException.class, () -> orderService.isOrderOwner(1L, "usern123ame@gmail.com"));
     }
 
     @Test
@@ -144,7 +146,7 @@ public class OrderServiceTest {
     public void shouldThrowException_WhenCheckingOwnerOfNonExistentOrder(){
         when(orderRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(OrderNotFoundException.class, () -> orderService.isOrderOwner(1L, 1L));
+        assertThrows(OrderNotFoundException.class, () -> orderService.isOrderOwner(1L, "username@gmail.com"));
     }
 
     @Test

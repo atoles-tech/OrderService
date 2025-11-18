@@ -14,10 +14,12 @@ import atl.web.order_service.dto.OrderDto;
 import atl.web.order_service.dto.OrderItemDto;
 import atl.web.order_service.dto.OrderResponseDto;
 import atl.web.order_service.dto.OrderResponseWithUserDto;
+import atl.web.order_service.dto.UserInfoDto;
 import atl.web.order_service.exceptions.ItemNotFoundException;
 import atl.web.order_service.exceptions.OrderNotFoundException;
 import atl.web.order_service.exceptions.RepeatbleItemException;
 import atl.web.order_service.exceptions.StatusException;
+import atl.web.order_service.exceptions.UserNotFoundException;
 import atl.web.order_service.mappers.OrderMapper;
 import atl.web.order_service.model.Item;
 import atl.web.order_service.model.Order;
@@ -110,7 +112,14 @@ public class OrderService {
 
     // create
     @Transactional
-    public OrderResponseWithUserDto createOrder(Long userId, OrderDto orderDto) {
+    public OrderResponseWithUserDto createOrder(String email, OrderDto orderDto) {
+
+        UserInfoDto user = userServiceClient.getUserByEmail(email);
+        if(user == null){
+            throw new UserNotFoundException(email);
+        }
+        Long userId = user.getId();
+        
         Order order = new Order();
         order.setUserId(userId);
         order.setStatus(Status.PROCESSING);
@@ -171,9 +180,16 @@ public class OrderService {
         return orderItems;
     }
 
-    public Boolean isOrderOwner(Long id, Long userId) {
-        return orderRepository.findById(id)
-                .orElseThrow(() -> new OrderNotFoundException(id)).getUserId() == userId;
+    public Boolean isOrderOwner(Long id, String email) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new OrderNotFoundException(id));
+
+        UserInfoDto user = userServiceClient.getUserByEmail(email);
+        if(user == null){
+            throw new UserNotFoundException(email);
+        }
+        
+        return order.getUserId() == user.getId(); 
     }
 
 }

@@ -78,23 +78,12 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getById(id));
     }
 
-    //TODO: 
-    //maybe for this function 
-    //be better, do check on order status (when order is not PROCESSING -> decline) 
     @PutMapping("orders/{id}/items")
     @PreAuthorize(value = "hasRole('ADMIN') or (hasRole('USER') and @orderService.isOrderOwner(#id, authentication.principal))")
     public ResponseEntity<OrderResponseWithUserDto> updateOrderItems(@PathVariable Long id, @RequestBody @Valid OrderDto orderDto){
         return ResponseEntity.ok(orderService.updateOrder(id, orderDto));
     }
 
-    /*TODO: 
-     * how to understand who can change status?  
-     * of course it can do admin
-     * but <<Can user do this?>>
-     * when user want decline order -> this operation need!
-     * i can make these operations in several http requests
-     * now it's mock :)
-     */
     @PutMapping("orders/{id}/status")
     @PreAuthorize(value = "hasRole('ADMIN') or (hasRole('USER') and @orderService.isOrderOwner(#id, authentication.principal))")
     public ResponseEntity<OrderResponseWithUserDto> updateOrderStatus(@PathVariable Long id, @RequestParam Status status){
@@ -106,10 +95,10 @@ public class OrderController {
     public ResponseEntity<OrderResponseWithUserDto> createOrder(
             @RequestBody @Valid OrderDto orderDto,
             Principal principal){    
-        return ResponseEntity.ok(orderService.createOrder(Long.valueOf(principal.getName()), orderDto));
+        return ResponseEntity.ok(orderService.createOrder(principal.getName(), orderDto));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("orders/{id}")
     @PreAuthorize(value = "hasRole('ADMIN')")
     public ResponseEntity<Void> deleteOrder(@PathVariable Long id){
         orderService.deleteOrder(id);

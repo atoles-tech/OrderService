@@ -19,6 +19,6 @@ public interface AuthServiceClient {
     @PostMapping("/api/v1/auth/extract-role")
     String extractRole(@RequestBody @Valid ValidateTokenRequestDto request);
 
-    @PostMapping("/api/v1/auth/extract-username")
-    String extractUsername(@RequestBody @Valid ValidateTokenRequestDto request);
+    @PostMapping("/api/v1/auth/extract-email")
+    String exrtactEmail(@RequestBody @Valid ValidateTokenRequestDto request);
 }
