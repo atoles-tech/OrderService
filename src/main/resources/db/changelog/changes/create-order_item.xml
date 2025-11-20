@@ -1,0 +1,36 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet id="create-order_item" author="atoles">
+        <createTable tableName="order_items">
+            <column name="id" autoIncrement="true" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="order_id" type="BIGINT">
+                 <constraints nullable="false"
+                    foreignKeyName="fk_order_items_order_id"
+                    referencedTableName="orders"
+                    referencedColumnNames="id"
+                    deleteCascade="true" />
+            </column>
+            <column name="item_id" type="BIGINT">
+               <constraints nullable="false"
+                    foreignKeyName="fk_order_items_item_id"
+                    referencedTableName="items"
+                    referencedColumnNames="id"
+                    deleteCascade="true" />
+            </column>
+            <column name="quantity" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="order_items" indexName="idx_order_items_order_id">
+            <column name="order_id"></column>
+        </createIndex>
+
+    </changeSet>
+</databaseChangeLog>
