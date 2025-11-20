@@ -5,18 +5,6 @@ spring:
     password: admin
     driver-class-name: org.postgresql.Driver
 
-resilience4j:
-  circuitbreaker:
-    instances:
-      user-service:
-        sliding-window-size: 10
-        failure-rate-threshold: 60
-        wait-duration-in-open-state: 5s
-  timelimiter:
-    instances:
-      user-service:
-        timeout-duration: 2s
-
 auth:
   service:
     url: http://localhost:8082
