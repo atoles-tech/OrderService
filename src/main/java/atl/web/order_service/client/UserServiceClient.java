@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import atl.web.order_service.dto.UserInfoDto;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
-@FeignClient(name = "user-service", url = "${user.service.url:http://localhost:8081}")
+@FeignClient(name = "user-service")
 public interface UserServiceClient {
     
     @GetMapping("/api/v1/users/{id}")
