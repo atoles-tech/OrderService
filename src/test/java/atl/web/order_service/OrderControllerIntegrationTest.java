@@ -81,6 +81,7 @@ class OrderControllerIntegrationTest {
         registry.add("spring.liquibase.enabled", () -> "false");
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
         registry.add("spring.cache.type", () -> "none");
+        registry.add("eureka.client.enabled", () -> "false");
     }
 
     private Long item1Id;
