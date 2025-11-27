@@ -5,11 +5,20 @@ spring:
   profiles:
     active: local
   application:
-    name: order_service
+    name: order-service
 
   liquibase: 
     change-log: classpath:db/changelog/db.master-changelog.xml
     enabled: true
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    eureka-service-url-poll-interval-seconds: 3
+    eureka-server-connect-timeout-seconds: 5
+  instance:
+    lease-expiration-duration-in-seconds: 30
 
 resilience4j:
   circuitbreaker:

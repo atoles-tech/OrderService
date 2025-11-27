@@ -8,8 +8,7 @@ import atl.web.order_service.dto.ValidateTokenRequestDto;
 import jakarta.validation.Valid;
 
 @FeignClient(
-    name = "auth-service",
-    url = "${auth.service.url:http://localhost:8082}"
+    name = "auth-service"
 )
 public interface AuthServiceClient {
     
