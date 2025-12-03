@@ -7,9 +7,22 @@ spring:
   application:
     name: order-service
 
+  kafka:
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: orders
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.use.type.headers: false
+        spring.json.trusted.packages: "*"
+
   liquibase: 
     change-log: classpath:db/changelog/db.master-changelog.xml
     enabled: true
+
 
 eureka:
   client:
@@ -32,4 +45,8 @@ resilience4j:
       user-service:
         timeout-duration: 2s
 
+
+topic:
+  payment-topic: payment-topic
+  order-topic: order-topic
 

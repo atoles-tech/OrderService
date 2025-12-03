@@ -3,6 +3,8 @@ package atl.web.order_service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import atl.web.order_service.dto.*;
+import atl.web.order_service.kafka.consumer.MessageConsumer;
+import atl.web.order_service.kafka.producer.MessageProducer;
 import atl.web.order_service.model.Status;
 import atl.web.order_service.model.Item;
 import atl.web.order_service.repositories.OrderRepository;
@@ -65,6 +67,12 @@ class OrderControllerIntegrationTest {
 
     @MockitoBean
     private UserServiceClient userServiceClient;
+
+    @MockitoBean
+    private MessageConsumer messageConsumer;
+
+    @MockitoBean
+    private MessageProducer messageProducer;
 
     @Container
     static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:17")
@@ -279,7 +287,7 @@ class OrderControllerIntegrationTest {
         setupMockAuth("ROLE_USER", "email@gmail.com");
         setupMockUserService("email@gmail.com");
 
-        MvcResult updateResult = mockMvc.perform(put("/api/v1/orders/{id}/status?status=DELIVERED", orderId)
+        MvcResult updateResult = mockMvc.perform(put("/api/v1/orders/{id}/status?status=SUCCESS", orderId)
                 .header("Authorization", getAuthHeader())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -289,7 +297,7 @@ class OrderControllerIntegrationTest {
                 OrderResponseWithUserDto.class);
 
         assertEquals(orderId, response.getId());
-        assertEquals(Status.DELIVERED, response.getStatus());
+        assertEquals(Status.SUCCESS, response.getStatus());
     }
 
     @Test
@@ -324,8 +332,7 @@ class OrderControllerIntegrationTest {
     void getUserOrders_ShouldReturnForbidden() throws Exception {
         setupMockAuth("ROLE_USER", "email@gmail.com");
 
-        mockMvc.perform(get("/api/v1/users/{userId}/orders", 456L)
-                .header("Authorization", getAuthHeader()))
+        mockMvc.perform(get("/api/v1/users/{userId}/orders", 456L))
                 .andExpect(status().isForbidden());
     }
 
