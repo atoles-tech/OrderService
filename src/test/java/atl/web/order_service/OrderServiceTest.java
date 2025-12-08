@@ -21,6 +21,7 @@ import atl.web.order_service.dto.*;
 import atl.web.order_service.exceptions.OrderNotFoundException;
 import atl.web.order_service.exceptions.RepeatbleItemException;
 import atl.web.order_service.exceptions.UserNotFoundException;
+import atl.web.order_service.kafka.producer.MessageProducer;
 import atl.web.order_service.mappers.OrderMapper;
 import atl.web.order_service.model.Item;
 import atl.web.order_service.model.Order;
@@ -40,6 +41,8 @@ public class OrderServiceTest {
     private OrderRepository orderRepository;
     @Mock
     private ItemService itemService;
+    @Mock
+    private MessageProducer messageProducer;
 
     @InjectMocks
     private OrderService orderService;

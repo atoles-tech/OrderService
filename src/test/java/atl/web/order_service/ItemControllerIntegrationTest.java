@@ -7,6 +7,8 @@ import atl.web.order_service.dto.ItemResponseDto;
 import atl.web.order_service.repositories.ItemRepository;
 import atl.web.order_service.client.AuthServiceClient;
 import atl.web.order_service.dto.ValidateTokenRequestDto;
+import atl.web.order_service.kafka.consumer.MessageConsumer;
+import atl.web.order_service.kafka.producer.MessageProducer;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -47,6 +49,13 @@ class ItemControllerIntegrationTest {
 
     @MockitoBean
     private AuthServiceClient authServiceClient;
+
+
+    @MockitoBean
+    private MessageConsumer messageConsumer;
+
+    @MockitoBean
+    private MessageProducer messageProducer;
 
     @Container
     static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:17")

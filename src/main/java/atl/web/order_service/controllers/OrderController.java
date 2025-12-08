@@ -59,7 +59,7 @@ public class OrderController {
     }
 
     @GetMapping("/users/{userId}/orders")
-    @PreAuthorize(value = "hasRole('ADMIN') or (hasRole('USER') and #userId.toString() == authentication.name)")
+    @PreAuthorize(value = "hasRole('ADMIN') or (hasRole('USER') and @orderService.isUser(#userId, authentication.name))")
     public ResponseEntity<?> getOrdersByUser(
             @PathVariable Long userId,
             @RequestParam(defaultValue = "0") Integer page,

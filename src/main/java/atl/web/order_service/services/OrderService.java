@@ -20,6 +20,8 @@ import atl.web.order_service.exceptions.OrderNotFoundException;
 import atl.web.order_service.exceptions.RepeatbleItemException;
 import atl.web.order_service.exceptions.StatusException;
 import atl.web.order_service.exceptions.UserNotFoundException;
+import atl.web.order_service.kafka.producer.MessageProducer;
+import atl.web.order_service.kafka.producer.OrderEvent;
 import atl.web.order_service.mappers.OrderMapper;
 import atl.web.order_service.model.Item;
 import atl.web.order_service.model.Order;
@@ -40,6 +42,8 @@ public class OrderService {
     private OrderRepository orderRepository;
 
     private ItemService itemService;
+
+    private MessageProducer messageProducer;
 
     // read-admin
     public Page<OrderResponseDto> getAll(Pageable pageable) {
@@ -97,7 +101,7 @@ public class OrderService {
 
         Status currentStatus = order.getStatus();
         
-        if(currentStatus == Status.DELIVERED || currentStatus == Status.REFUNDED){
+        if(currentStatus == Status.CANCELLED){
             throw new StatusException();
         }
 
@@ -130,6 +134,15 @@ public class OrderService {
 
         order.setOrderItems(orderItems);
         Order savedOrder = orderRepository.save(order);
+
+        OrderEvent event = new OrderEvent(
+            savedOrder.getId(),
+            userId,
+            savedOrder.getOrderItems().stream()
+                .mapToDouble((oi) ->  oi.getQuantity() * oi.getItem().getPrice())
+                .sum()
+        );
+        messageProducer.sendMessage(event);
 
         OrderResponseWithUserDto resp = orderMapper.toOrderResponseWithUserDto(savedOrder);
         resp.setUserInfo(userServiceClient.getUser(userId));
@@ -190,6 +203,11 @@ public class OrderService {
         }
         
         return order.getUserId() == user.getId(); 
+    }
+
+    public Boolean isUser(Long userId, String email){
+        Long currentUserId = userServiceClient.getUserByEmail(email).getId();
+        return currentUserId.equals(userId);
     }
 
 }

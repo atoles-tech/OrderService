@@ -5,18 +5,10 @@ spring:
     password: admin
     driver-class-name: org.postgresql.Driver
 
+  kafka:
+    bootstrap-servers: localhost:29092
+
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
-
-auth:
-  service:
-    url: http://localhost:8082
-
-user:
-  service:
-    url: http://localhost:8081
-
-jwt:
-  secret: c3VwZXJTZWN1cmVTZWNyZXRLZXlGb3JKV1RDb25maWd1cmF0aW9uMTIz
